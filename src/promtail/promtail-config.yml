@@ -1,0 +1,31 @@
+# Настройки сервера Promtail
+server:
+  # порт, на котором Promtail будет слушать HTTP-запросы
+  http_listen_port: 9080
+  # порт для gRPC-сервера
+  grpc_listen_port: 0
+
+# Позиции чтения файлов
+positions:
+  # путь к файлу, где Promtail хранит информацию о том, сколько байт из каждого файла уже прочитано.
+  filename: /tmp/positions.yaml
+
+# Куда отправлять логи (/loki/api/v1/push — специальный API-эндпоинт для приема логов (push-эндоинт))
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+# Откуда собирать логи
+scrape_configs:
+  # Добавляет лейбл job="system" ко всем логам из этого блока
+  - job_name: system
+    static_configs:
+      - targets:
+          # в Promtail это поле не используется для определения адреса,
+          # оно нужно для совместимости с синтаксисом Prometheus. Обычно оставляют localhost.
+          - localhost
+        # метки, которые будут добавлены к каждой строке лога
+        labels:
+          # добавляет метку job="varlogs"
+          job: varlogs
+          # специальная метка, которая указывает Promtail читать файлы по паттерну /var/log/*.log".
+          __path__: /var/log/*.log
